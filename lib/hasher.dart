@@ -16,18 +16,12 @@ class Hasher {
     this.depth = 8,
   }) : _depthDivider = 256 ~/ depth;
 
-  HashPixel _colorToHashPixel(int color) => HashPixel(
-        r: getRed(color) ~/ _depthDivider,
-        g: getGreen(color) ~/ _depthDivider,
-        b: getBlue(color) ~/ _depthDivider,
-        a: getAlpha(color) ~/ _depthDivider,
+  HashPixel _colorToHashPixel(Pixel pixel) => HashPixel(
+        r: pixel.r ~/ _depthDivider,
+        g: pixel.g ~/ _depthDivider,
+        b: pixel.b ~/ _depthDivider,
+        a: pixel.a ~/ _depthDivider,
       );
-
-  int _abgrToArgb(int abgrColor) {
-    int r = (abgrColor >> 16) & 0xFF;
-    int b = abgrColor & 0xFF;
-    return (abgrColor & 0xFF00FF00) | (b << 16) | r;
-  }
 
   //FIXME: Its not async but has future return type
   FutureOr<ImageHash> getImageHash(Image src) {
@@ -45,10 +39,9 @@ class Hasher {
       int normalizedIndex = 0;
       for (int x = 0; x < image.width; x++) {
         for (int y = 0; y < image.height; y++) {
-          final abgrPixel = image.getPixel(x, y);
+          final pixel = image.getPixel(x, y);
 
-          final rgbPixel = _abgrToArgb(abgrPixel);
-          final hashPixel = _colorToHashPixel(rgbPixel);
+          final hashPixel = _colorToHashPixel(pixel);
           hash[normalizedIndex] = hashPixel;
           normalizedIndex++;
         }
