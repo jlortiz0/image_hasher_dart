@@ -1,50 +1,44 @@
-﻿import 'dart:typed_data';
-
+﻿import 'package:bit_array/bit_array.dart';
+import 'package:bitcount/bitcount.dart';
 import 'package:equatable/equatable.dart';
-import 'package:image_hasher_dart/models/hash_pixel.dart';
+import 'package:image_hasher_dart/exceptions/hash_incompatibility_exception.dart';
 
 class ImageHash with EquatableMixin {
-  /// Into how many parts the pixel channel value is divided
-  final int depth;
-
   /// Array of hash bytes
-  final Uint8List hashList;
+  final BitArray hashList;
 
   /// Size of hash square
   final int resolution;
 
-  int get length => hashList.length;
+  int get length => (hashList.length / 8).ceil();
 
   @override
   List<Object> get props => [
-        depth,
         hashList,
         resolution,
       ];
 
   ImageHash({
     required this.resolution,
-    required this.depth,
-    Uint8List? hashList,
-  }) : hashList = hashList ?? Uint8List(resolution * resolution * 4);
+    required this.hashList,
+  });
 
-  HashPixel operator [](int index) {
-    final int baseIndex = index * 4;
+  double compareTo(final ImageHash b) {
+    if (hashList.length != b.hashList.length) {
+      throw const HashIncompatibilityException(
+        message: 'Hash length mismatch',
+      );
+    }
+    final copy = hashList.clone();
+    copy.xor(b.hashList);
+    final iter = copy.asUint32Iterable();
 
-    return HashPixel(
-      r: hashList[baseIndex],
-      g: hashList[baseIndex + 1],
-      b: hashList[baseIndex + 2],
-      a: hashList[baseIndex + 3],
-    );
-  }
+    int unequalCount = 0;
+    for (int i in iter) {
+      unequalCount += i.bitCount();
+    }
 
-  operator []=(int i, HashPixel value) {
-    final baseIndex = i * 4;
-
-    hashList[baseIndex] = value.r;
-    hashList[baseIndex + 1] = value.g;
-    hashList[baseIndex + 2] = value.b;
-    hashList[baseIndex + 3] = value.a;
+    final percentage = unequalCount / hashList.length;
+    return 1 - percentage;
   }
 }

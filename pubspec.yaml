@@ -1,6 +1,6 @@
 name: image_hasher_dart
 description: Package allowing creation of image hash that can be used to compare images for physical similarity.
-version: 1.1.0
+version: 2.0.0
 repository: https://github.com/KopaczPatryk/image_hasher_dart
 
 environment:
@@ -14,7 +14,8 @@ platforms:
   windows:
 
 dependencies:
-  collection: ^1.18.0
+  bit_array: ^2.2.1
+  bitcount: ^0.3.0
   equatable: ^2.0.5
   image: ^4.1.0
 
