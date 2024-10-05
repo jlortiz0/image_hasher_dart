@@ -15,20 +15,22 @@ class Hasher {
   //FIXME: Its not async but has future return type
   FutureOr<ImageHash> getImageHash(Image src) {
     final future = Future(() {
-      final image = copyResize(
+      final image = grayscale(copyResize(
         src,
         width: size + 1,
         height: size,
-      );
+        interpolation: Interpolation.cubic
+      ));
       final arr = BitArray(size * size);
       int normalizedIndex = 0;
-      for (int x = 1; x < image.width; x++) {
-        for (int y = 0; y < image.height; y++) {
+      for (int y = 0; y < image.height; y++) {
+        var prev = image.getPixel(0, y);
+        for (int x = 1; x < image.width; x++) {
           final pixel = image.getPixel(x, y);
-          final compPixel = image.getPixel(x - 1, y);
 
-          arr[normalizedIndex] = pixel.luminanceNormalized >= compPixel.luminanceNormalized;
+          arr[normalizedIndex] = pixel.r < prev.r;
           normalizedIndex++;
+          prev = pixel;
         }
       }
 
